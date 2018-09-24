@@ -5,6 +5,7 @@ A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://g
 ## Features
 
 * MDX: JavaScript/React in Markdown
+  * see */mdx-example* blog post
 * Prism.js: Syntax Highlighting
 * Pagination
 * Categories
