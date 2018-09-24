@@ -1,13 +1,13 @@
 # Gatsby.js MDX Blog Starter Project
 
-A starter project in [Gatsby,js](https://www.gatsbyjs.org/) with [MDX](https://github.com/mdx-js/mdx).
+A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://github.com/mdx-js/mdx).
 
 ## Features
 
-* MDX: (React) Code in Markdown
+* MDX: JavaScript/React in Markdown
 * Prism.js: Syntax Highlighting
 * Pagination
-* Categrories
+* Categories
 * Styled Components
 
 ## Setup
