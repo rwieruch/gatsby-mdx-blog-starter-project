@@ -1,5 +1,7 @@
 # Gatsby.js MDX Blog Starter Project
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/rwieruch/gatsby-mdx-blog-starter-project.svg)](https://greenkeeper.io/)
+
 A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://github.com/mdx-js/mdx).
 
 ## Features
