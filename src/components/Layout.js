@@ -2,14 +2,14 @@ import React, { Fragment } from 'react';
 import Helmet from 'react-helmet';
 import { graphql } from 'gatsby';
 import { MDXProvider } from '@mdx-js/tag';
-import { injectGlobal } from 'styled-components';
+import { createGlobalStyle } from 'styled-components';
 
 import 'prismjs/themes/prism-okaidia.css';
 
 import Link from './Link';
 import mdxComponents from './mdx';
 
-injectGlobal`
+const GlobalStyle = createGlobalStyle`
   html, body {
     margin: 0;
     padding: 0;
@@ -67,6 +67,8 @@ export default ({ site, frontmatter = {}, children }) => {
       >
         <html lang="en" />
       </Helmet>
+
+      <GlobalStyle />
 
       <MDXProvider components={mdxComponents}>
         <Fragment>
