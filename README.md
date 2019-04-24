@@ -10,7 +10,6 @@ A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://g
 * Pagination
 * Categories
 * External Dependencies (e.g. YouTube Player in MDX)
-* Styled Components
 
 ## Setup
 
