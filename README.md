@@ -5,10 +5,11 @@ A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://g
 ## Features
 
 * MDX: JavaScript/React in Markdown
-  * see */mdx-example* blog post
+  * see */content/blog/mdx-example*
 * Prism.js: Syntax Highlighting
 * Pagination
 * Categories
+* External Dependencies (e.g. YouTube Player in MDX)
 * Styled Components
 
 ## Setup
