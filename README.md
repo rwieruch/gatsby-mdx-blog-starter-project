@@ -1,6 +1,6 @@
 # Gatsby.js MDX Blog Starter Project
 
-A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://github.com/mdx-js/mdx).
+A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://github.com/mdx-js/mdx) to render React components in Markdown.
 
 ## Features
 
