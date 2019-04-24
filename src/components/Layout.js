@@ -1,13 +1,13 @@
 import React, { Fragment } from 'react';
 import Helmet from 'react-helmet';
 import { graphql } from 'gatsby';
-import { MDXProvider } from '@mdx-js/tag';
+import { MDXProvider } from '@mdx-js/react';
 import { createGlobalStyle } from 'styled-components';
 
 import 'prismjs/themes/prism-okaidia.css';
 
 import Link from './Link';
-import mdxComponents from './mdx';
+import { MDXLayoutComponents, MDXGlobalComponents } from './mdx';
 
 const GlobalStyle = createGlobalStyle`
   html, body {
@@ -70,7 +70,12 @@ export default ({ site, frontmatter = {}, children }) => {
 
       <GlobalStyle />
 
-      <MDXProvider components={mdxComponents}>
+      <MDXProvider
+        components={{
+          ...MDXLayoutComponents,
+          ...MDXGlobalComponents,
+        }}
+      >
         <Fragment>
           <ul>
             {NAVIGATION.map(navigation => (

@@ -8,61 +8,59 @@ keywords: ["react"]
 banner: "./images/banner.jpg"
 ---
 
-import Link from "$components/Link";
 import Counter from "$components/Counter";
 
-When we shift gears toward GraphQL on the server side, we will implement a GraphQL API that can eventually be consumed into client-side operations. By the end, you should have a firm grasp about using GraphQL in almost all JavaScript applications. I say 'almost' because there are always new libraries, patterns, and best practices that need to be learned to keep up with emerging technology.
+Showcasing how MDX for Gatsby.js works ... The Counter component is imported explicitly, but since we are using MDXProvider, we can also define global components which don't need to be imported (e.g. Link, YouTube).
 
-# A React component in Markdown:
+## A React component in Markdown (imported component):
 
-<Counter />
+<Counter initialCounter={3} />
 
 ## Code Snippet
 
-Code Snippet:
-
 ```jsx{1,4-6}
-import React, { Component } from 'react';
+import React from 'react';
 
-class Counter extends Component {
-  state = {
-    counter: 0,
+const Counter = initialCounter => {
+  const [counter, setCounter] = React.useState(initialCounter);
+
+  const onIncrement = () => {
+    setCounter(c => c + 1);
   };
 
-  onIncrement = () => {
-    this.setState(state => ({ counter: state.counter + 1 }));
+  const onIncrement = () => {
+    setCounter(c => c - 1);
   };
 
-  onDecrement = () => {
-    this.setState(state => ({ counter: state.counter - 1 }));
-  };
+  return (
+    <div>
+      {counter}
 
-  render() {
-    return (
       <div>
-        {this.state.counter}
-        <button onClick={this.onIncrement} type="button">
+        <button onClick={onIncrement} type="button">
           Increment
         </button>
-        <button onClick={this.onDecrement} type="button">
+        <button onClick={onDecrement} type="button">
           Decrement
         </button>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default Counter;
 ```
 
-Hello `foo` bar
-
-An external Link:
+## An external Link:
 
 <Link to="https://roadtoreact.com/">Find out more about it</Link>
 
-An Image:
+## An Image:
 
 ![Some Cover Image](./images/banner.jpg)
+
+## YouTube (global component)
+
+<YouTube videoId="rI8tNMsozo0" />
 
 That's it.

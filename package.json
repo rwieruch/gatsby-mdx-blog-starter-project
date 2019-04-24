@@ -7,7 +7,6 @@
   "dependencies": {
     "@mdx-js/mdx": "^1.0.14",
     "@mdx-js/react": "^1.0.6",
-    "@mdx-js/tag": "^0.20.3",
     "core-js": "^2.5.7",
     "gatsby": "^2.3.25",
     "gatsby-image": "^2.0.39",
@@ -29,6 +28,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-helmet": "~5.2.0",
+    "react-youtube": "^7.9.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
