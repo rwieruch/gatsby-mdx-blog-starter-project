@@ -1585,3 +1585,792 @@ Let's take a step back from the higher-order components, React Context API, and 
 
 Let's start by implementing the password forget feature. Since you already implemented the interface in your Firebase class, you can use it in components. The following file adds most of the password reset logic in a form again. We already used a couple of those forms before, so it shouldn't be different now. Add this in the *src/components/PasswordForget/index.js* file:
 
+```javascript
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+
+import { withFirebase } from '../Firebase';
+import * as ROUTES from '../../constants/routes';
+
+const PasswordForgetPage = () => (
+  <div>
+    <h1>PasswordForget</h1>
+    <PasswordForgetForm />
+  </div>
+);
+
+const INITIAL_STATE = {
+  email: '',
+  error: null,
+};
+
+class PasswordForgetFormBase extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...INITIAL_STATE };
+  }
+
+  onSubmit = event => {
+    const { email } = this.state;
+
+    this.props.firebase
+      .doPasswordReset(email)
+      .then(() => {
+        this.setState({ ...INITIAL_STATE });
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
+
+    event.preventDefault();
+  };
+
+  onChange = event => {
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
+  render() {
+    const { email, error } = this.state;
+
+    const isInvalid = email === '';
+
+    return (
+      <form onSubmit={this.onSubmit}>
+        <input
+          name="email"
+          value={this.state.email}
+          onChange={this.onChange}
+          type="text"
+          placeholder="Email Address"
+        />
+        <button disabled={isInvalid} type="submit">
+          Reset My Password
+        </button>
+
+        {error && <p>{error.message}</p>}
+      </form>
+    );
+  }
+}
+
+const PasswordForgetLink = () => (
+  <p>
+    <Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link>
+  </p>
+);
+
+export default PasswordForgetPage;
+
+const PasswordForgetForm = withFirebase(PasswordForgetFormBase);
+
+export { PasswordForgetForm, PasswordForgetLink };
+```
+
+The code is verbose, but it it's no different from the sign up and sign in forms from previous sections. The password forget uses a form to submit the information (email address) needed by the Firebase authentication API to reset the password. A class method (onSubmit) ensures the information is send to the API. It also resets the form's input field on a successful request, and shows an error on an erroneous request. The form is validated before it is submitted as well. The file implements a password forget link as a component which isn't used directly in the form component. It is similar to the SignUpLink component that we used on in the SignInPage component. This link is the same, and it's still usable. If a user forgets the password after sign up, the password forget page uses the link in the *src/components/SignIn/index.js* file:
+
+```javascript{6,14}
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { compose } from 'recompose';
+
+import { SignUpLink } from '../SignUp';
+import { PasswordForgetLink } from '../PasswordForget';
+import { withFirebase } from '../Firebase';
+import * as ROUTES from '../../constants/routes';
+
+const SignInPage = () => (
+  <div>
+    <h1>SignIn</h1>
+    <SignInForm />
+    <PasswordForgetLink />
+    <SignUpLink />
+  </div>
+);
+
+
+...
+```
+
+The password forget page is already matched in the App component, so you can drop the PasswordForgetLink component in the sign in page and know the mapping between route and component is complete. Start the application and reset your password. It doesn't matter if you are authenticated or not. Once you send the request, you should get an email from Firebase to update your password.
+
+## Password Change
+
+Next we'll add the password change feature, which is also in your Firebase interface. You only need a form component to use it. Again, the form component isn't any different from the sign in, sign up, and password forget forms. In the *src/components/PasswordChange/index.js* file add the following component:
+
+```javascript
+import React, { Component } from 'react';
+
+import { withFirebase } from '../Firebase';
+
+const INITIAL_STATE = {
+  passwordOne: '',
+  passwordTwo: '',
+  error: null,
+};
+
+class PasswordChangeForm extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...INITIAL_STATE };
+  }
+
+  onSubmit = event => {
+    const { passwordOne } = this.state;
+
+    this.props.firebase
+      .doPasswordUpdate(passwordOne)
+      .then(() => {
+        this.setState({ ...INITIAL_STATE });
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
+
+    event.preventDefault();
+  };
+
+  onChange = event => {
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
+  render() {
+    const { passwordOne, passwordTwo, error } = this.state;
+
+    const isInvalid =
+      passwordOne !== passwordTwo || passwordOne === '';
+
+    return (
+      <form onSubmit={this.onSubmit}>
+        <input
+          name="passwordOne"
+          value={passwordOne}
+          onChange={this.onChange}
+          type="password"
+          placeholder="New Password"
+        />
+        <input
+          name="passwordTwo"
+          value={passwordTwo}
+          onChange={this.onChange}
+          type="password"
+          placeholder="Confirm New Password"
+        />
+        <button disabled={isInvalid} type="submit">
+          Reset My Password
+        </button>
+
+        {error && <p>{error.message}</p>}
+      </form>
+    );
+  }
+}
+
+export default withFirebase(PasswordChangeForm);
+```
+
+The component updates its local state using `onChange` handlers in the input fields. It validates the state before submitting a request to change the password by enabling or disabling the submit button, and it shows again an error message when a request fails.
+
+So far, the PasswordChangeForm is not matched by any route, because it should live on the Account page. The Account page could serve as the central place for users to manage their account, where it shows the PasswordChangeForm and PasswordResetForm, accessible by a standalone route. You already created the *src/components/Account/index.js* file and matched the route in the App component. You only need to implement it:
+
+```javascript
+import React from 'react';
+
+import { PasswordForgetForm } from '../PasswordForget';
+import PasswordChangeForm from '../PasswordChange';
+
+const AccountPage = () => (
+  <div>
+    <h1>Account Page</h1>
+    <PasswordForgetForm />
+    <PasswordChangeForm />
+  </div>
+);
+
+export default AccountPage;
+```
+
+The Account page doesn't have any business logic. It uses the password forget and password change forms in a central place. In this section, your user experience improved significantly with the password forget and password change features, handling scenarios where users have trouble remembering passwords.
+
+### Exercises:
+
+* Consider ways to protect the Account page and make it accessible only for authenticated users.
+* Confirm your [source code for the last section](http://bit.ly/2VqWgt4)
+
+# Protected Routes in React with Authorization
+
+So far, all of your application's routes are accessible by everyone. It doesn't matter whether the user is authenticated or not authenticated. For instance, when you sign out on the home or account page, there is no redirect, even though these pages should be only accessible for authenticated users. There is no reason to show a non authenticated user the account or home page in the first place, because these are the places where a user accesses sensitive information. In this section, so you will implement a protection for these routes called authorization. The protection is a **broad-grained authorization**, which checks for authenticated users. If none is present, it redirects from a protected to a public route; else, it will do nothing. The condition is defined as:
+
+```javascript
+const condition = authUser => authUser != null;
+
+// short version
+const condition = authUser => !!authUser;
+```
+
+In contrast, a more **fine-grained authorization** could be a role-based or permission-based authorization:
+
+```javascript
+// role-based authorization
+const condition = authUser => authUser.role === 'ADMIN';
+
+// permission-based authorization
+const condition = authUser => authUser.permissions.canEditAccount;
+```
+
+Fortunately, we implement it in a way that lets you define the authorization condition (predicate) with flexibility, so that you can use a more generalized authorization rule, permission-based or role-based authorizations.
+
+Like the `withAuthentication` higher-order component, there is a `withAuthorization` higher-order component to shield the authorization business logic from your components. It can be used on any component that needs to be protected with authorization (e.g. home page, account page). Let's start to add the higher-order component in a new *src/components/Session/withAuthorization.js* file:
+
+```javascript
+import React from 'react';
+
+const withAuthorization = () => Component => {
+  class WithAuthorization extends React.Component {
+    render() {
+      return <Component {...this.props} />;
+    }
+  }
+
+  return WithAuthorization;
+};
+
+export default withAuthorization;
+```
+
+So far, the higher-order component is not doing anything but taking a component as input and returning it as output. However, the higher-order component should be able to receive a condition function passed as parameter. You can decide if it should be a broad or fine-grained (role-based, permission-based) authorization rule. Second, it has to decide based on the condition whether it should redirect to a public page (public route), because the user isn't authorized to view the current protected page (protected route). Let's paste the implementation details for the higher-order component and go through it step-by-step:
+
+```javascript{2,3,5,6,8,10,11,12,13,14,15,16,17,18,20,21,22,31,32,33,34}
+import React from 'react';
+import { withRouter } from 'react-router-dom';
+import { compose } from 'recompose';
+
+import { withFirebase } from '../Firebase';
+import * as ROUTES from '../../constants/routes';
+
+const withAuthorization = condition => Component => {
+  class WithAuthorization extends React.Component {
+    componentDidMount() {
+      this.listener = this.props.firebase.auth.onAuthStateChanged(
+        authUser => {
+          if (!condition(authUser)) {
+            this.props.history.push(ROUTES.SIGN_IN);
+          }
+        },
+      );
+    }
+
+    componentWillUnmount() {
+      this.listener();
+    }
+
+    render() {
+      return (
+        <Component {...this.props} />
+      );
+    }
+  }
+
+  return compose(
+    withRouter,
+    withFirebase,
+  )(WithAuthorization);
+};
+
+export default withAuthorization;
+```
+
+The render method displays the passed component (e.g. home page, account page) that should be protected by this higher-order component. We will refine this later. The real authorization logic happens in the `componentDidMount()` lifecycle method. Like the `withAuthentication()` higher-order component, it uses the Firebase listener to trigger a callback function every time the authenticated user changes. The authenticated user is either a `authUser` object or `null`. Within this function, the passed `condition()` function is executed with the `authUser`. If the authorization fails, for instance because the authenticated user is `null`, the higher-order component redirects to the sign in page. If it doesn't fail, the higher-order component does nothing and renders the passed component (e.g. home page, account page). To redirect a user, the higher-order component has access to the history object of the Router using the in-house `withRouter()` higher-order component from the React Router library.
+
+Remember to export the higher-order component from your session module into the *src/components/Sessions/index.js* file:
+
+```javascript{3,5}
+import AuthUserContext from './context';
+import withAuthentication from './withAuthentication';
+import withAuthorization from './withAuthorization';
+
+export { AuthUserContext, withAuthentication, withAuthorization };
+```
+
+In the next step, you can use the higher-order component to protect your routes (e.g. /home and /account) with authorization rules using the passed `condition()` function.  To keep it simple, the following two components are only protected with a broad authorization rule that checks if the `authUser` is not `null`. First, enhance the HomePage component with the higher-order component and define the authorization condition for it:
+
+```javascript{3,8,12,14}
+import React from 'react';
+
+import { withAuthorization } from '../Session';
+
+const HomePage = () => (
+  <div>
+    <h1>Home Page</h1>
+    <p>The Home Page is accessible by every signed in user.</p>
+  </div>
+);
+
+const condition = authUser => !!authUser;
+
+export default withAuthorization(condition)(HomePage);
+```
+
+Second, enhance the AccountPage component with the higher-order component and define the authorization condition. It similar to the previous usage:
+
+```javascript{5,15,17}
+import React from 'react';
+
+import { PasswordForgetForm } from '../PasswordForget';
+import PasswordChangeForm from '../PasswordChange';
+import { withAuthorization } from '../Session';
+
+const AccountPage = () => (
+  <div>
+    <h1>Account Page</h1>
+    <PasswordForgetForm />
+    <PasswordChangeForm />
+  </div>
+);
+
+const condition = authUser => !!authUser;
+
+export default withAuthorization(condition)(AccountPage);
+```
+
+The protection of both pages/routes is almost done. One refinement can be made in the `withAuthorization` higher-order component using the authenticated user from the context:
+
+```javascript{5,25,26,27,28,29}
+import React from 'react';
+import { withRouter } from 'react-router-dom';
+import { compose } from 'recompose';
+
+import AuthUserContext from './context';
+import { withFirebase } from '../Firebase';
+import * as ROUTES from '../../constants/routes';
+
+const withAuthorization = condition => Component => {
+  class WithAuthorization extends React.Component {
+    componentDidMount() {
+      this.listener = this.props.firebase.auth.onAuthStateChanged(authUser => {
+        if (!condition(authUser)) {
+          this.props.history.push(ROUTES.SIGN_IN);
+        }
+      });
+    }
+
+    componentWillUnmount() {
+      this.listener();
+    }
+
+    render() {
+      return (
+        <AuthUserContext.Consumer>
+          {authUser =>
+            condition(authUser) ? <Component {...this.props} /> : null
+          }
+        </AuthUserContext.Consumer>
+      );
+    }
+  }
+
+  return compose(
+    withRouter,
+    withFirebase,
+  )(WithAuthorization);
+};
+
+export default withAuthorization;
+```
+
+The improvement in the render method was needed to avoid showing the protected page before the redirect happens. You want to show nothing if the authenticated user doesn't meet the condition's criteria. Then it's fine if the listener is too late to redirect the user, because the higher-order component didn't show the protected component.
+
+Both routes are protected now, so we can render properties of the authenticated user in the AccountPage component without a null check for the authenticated user. You know the user should be there, otherwise the higher-order component would redirect to a public route.
+
+```javascript{3,8,9,11,15,16}
+import React from 'react';
+
+import { AuthUserContext, withAuthorization } from '../Session';
+import { PasswordForgetForm } from '../PasswordForget';
+import PasswordChangeForm from '../PasswordChange';
+
+const AccountPage = () => (
+  <AuthUserContext.Consumer>
+    {authUser => (
+      <div>
+        <h1>Account: {authUser.email}</h1>
+        <PasswordForgetForm />
+        <PasswordChangeForm />
+      </div>
+    )}
+  </AuthUserContext.Consumer>
+);
+
+const condition = authUser => !!authUser;
+
+export default withAuthorization(condition)(AccountPage);
+```
+
+You can try it by signing out from your application and trying to access the */account* or */home* routes. Both should redirect you to the */signin* route. It should also redirect you automatically when you stay on one of the routes while you sign out.
+
+You can imagine how this technique gives control over authorizations, not just by broader authorization rules, but more specific role-based and permission-based authorizations. For instance, an admin page available for users with the admin role could be protected as follows:
+
+```javascript
+import React from 'react';
+
+import * as ROLES from '../../constants/roles';
+
+const AdminPage = () => (
+  <div>
+    <h1>Admin</h1>
+    <p>
+      Restricted area! Only users with the admin role are authorized.
+    </p>
+  </div>
+);
+
+const condition = authUser =>
+  authUser && !!authUser.roles[ROLES.ADMIN];
+
+export default withAuthorization(condition)(AdminPage);
+```
+
+Don't worry about this yet, because we'll implement a role-based authorization for this application later. For now, you have successfully implemented a full-fledged authentication mechanisms with Firebase in React, added neat features such as password reset and password change, and protected routes with dynamic authorization conditions.
+
+### Exercises:
+
+* Research yourself how a role-based or permission-based authorization could be implemented.
+* Confirm your [source code for the last section](http://bit.ly/2Vop4SL)
+
+# Firebase Realtime Database in React
+
+So far, only Firebase knows about your users. There is no way to retrieve a single user or a list of users for your application from their authentication database. They are stored internally by Firebase to keep the authentication secure. That's good, because you are never involved in storing sensitive data like passwords. However, you can introduce the Firebase realtime database to keep track of user entities yourself. It makes sense, because then you can associate other domain entities (e.g. a message, a book, an invoice) created by your users to your users. You should keep control over your users, even though Firebase takes care about all the sensitive data. This section will explain how to store users in your realtime database in Firebase. First, initialize the realtime database API for your Firebase class as you did earlier for the authentication API:
+
+```javascript{3,12}
+import app from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/database';
+
+const config = { ... };
+
+class Firebase {
+  constructor() {
+    app.initializeApp(config);
+
+    this.auth = app.auth();
+    this.db = app.database();
+  }
+
+  // *** Auth API ***
+
+  ...
+}
+
+export default Firebase;
+```
+
+Second, extend the interface for your Firebase class for the user entity. It defines two new functions: one to get a reference to a user by identifier (uid) and one to get a reference to all users:
+
+```javascript{30,32,34}
+import app from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/database';
+
+const config = { ... };
+
+class Firebase {
+  constructor() {
+    app.initializeApp(config);
+
+    this.auth = app.auth();
+    this.db = app.database();
+  }
+
+  // *** Auth API ***
+
+  doCreateUserWithEmailAndPassword = (email, password) =>
+    this.auth.createUserWithEmailAndPassword(email, password);
+
+  doSignInWithEmailAndPassword = (email, password) =>
+    this.auth.signInWithEmailAndPassword(email, password);
+
+  doSignOut = () => this.auth.signOut();
+
+  doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
+
+  doPasswordUpdate = password =>
+    this.auth.currentUser.updatePassword(password);
+
+  // *** User API ***
+
+  user = uid => this.db.ref(`users/${uid}`);
+
+  users = () => this.db.ref('users');
+}
+
+export default Firebase;
+```
+
+The paths in the `ref()` method match the location where your entities (users) will be stored in Firebase's realtime database API. If you delete a user at "users/5", the user with the identifier 5 will be removed from the database. If you create a new user at "users", Firebase creates the identifier for you and assigns all the information you pass for the user. The paths follow the [REST philosophy](https://en.wikipedia.org/wiki/Representational_state_transfer) where every entity (e.g. user, message, book, author) is associated with a URI, and HTTP methods are used to create, update, delete and get entities. In Firebase, the RESTful URI becomes a simple path, and the HTTP methods become Firebase's API.
+
+### Exercises:
+
+* Activate [Firebase's Realtime Database](https://www.robinwieruch.de/firebase-tutorial/) on your Firebase Dashboard
+  * Set your Database Rules on your Firebase Project's Dashboard to `{ "rules": { ".read": true, ".write": true } }` to give everyone read and write access for now.
+* Read more about [Firebase's realtime database setup for Web](https://firebase.google.com/docs/database/web/start)
+* Confirm your [source code for the last section](http://bit.ly/2VpDkdW)
+
+# Manage Users with Firebase's Realtime Database in React
+
+Now, use these references in your React components to create and get users from Firebase's realtime database. The best place to add user creation is the SignUpForm component, as it is the most natural place to save users after signing up via the Firebase authentication API. Add another API request to create a user when the sign up is successful. In *src/components/SignUp/index.js* file:
+
+```javascript{15,16,17,18,19,20,21,22,23}
+...
+
+class SignUpFormBase extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...INITIAL_STATE };
+  }
+
+  onSubmit = event => {
+    const { username, email, passwordOne } = this.state;
+
+    this.props.firebase
+      .doCreateUserWithEmailAndPassword(email, passwordOne)
+      .then(authUser => {
+        // Create a user in your Firebase realtime database
+        return this.props.firebase
+          .user(authUser.user.uid)
+          .set({
+            username,
+            email,
+          });
+      })
+      .then(() => {
+        this.setState({ ...INITIAL_STATE });
+        this.props.history.push(ROUTES.HOME);
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
+
+    event.preventDefault();
+  };
+
+  ...
+}
+
+...
+```
+
+There are two important things happening for a new sign up via the submit handler:
+
+* (1) It creates a user in Firebase's internal authentication database that is only limited accessible.
+* (2) If (1) was successful, it creates a user in Firebase's realtime database that is accessible.
+
+To create a user in Firebase's realtime database, it uses the previously created reference from the Firebase class by providing the identifier (uid) of the user from Firebase's authentication database. Then the `set()` method can be used to provide data for this entity which is allocated for "users/uid". Finally, you can use the `username` as well to provide additional information about your user.
+
+Note: It is fine to store user information in your own database. However, you should make sure not to store the password or any other sensitive data of the user on your own. Firebase already deals with the authentication, so there is no need to store the password in your database. Many steps are necessary to secure sensitive data (e.g. encryption), and it could be a security risk to perform it on your own.
+
+After the second Firebase request that creates the user resolves successfully, the previous business logic takes place again: reset the local state and redirect to the home page. To verify the user creation is working, retrieve all the users from the realtime database in one of your other components. The admin page may be a good choice for it, because it can be used by admin users to manage the application-wide users later. First, make the admin page available via your Navigation component:
+
+```javascript{14,15,16}
+...
+
+const NavigationAuth = () => (
+  <ul>
+    <li>
+      <Link to={ROUTES.LANDING}>Landing</Link>
+    </li>
+    <li>
+      <Link to={ROUTES.HOME}>Home</Link>
+    </li>
+    <li>
+      <Link to={ROUTES.ACCOUNT}>Account</Link>
+    </li>
+    <li>
+      <Link to={ROUTES.ADMIN}>Admin</Link>
+    </li>
+    <li>
+      <SignOutButton />
+    </li>
+  </ul>
+);
+
+...
+```
+
+Next, the AdminPage component's `componentDidMount()` lifecycle method in *src/components/Admin/index.js* is the perfect place to fetch users from your Firebase realtime database API:
+
+```javascript{3,9,10,11,12,15,16,17,18,19,20,21,22,23,24,35}
+import React, { Component } from 'react';
+
+import { withFirebase } from '../Firebase';
+
+class AdminPage extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      loading: false,
+      users: {},
+    };
+  }
+
+  componentDidMount() {
+    this.setState({ loading: true });
+
+    this.props.firebase.users().on('value', snapshot => {
+      this.setState({
+        users: snapshot.val(),
+        loading: false,
+      });
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>Admin</h1>
+      </div>
+    );
+  }
+}
+
+export default withFirebase(AdminPage);
+```
+
+We are using the users reference from our Firebase class to attach a listener. The listener is called `on()`, which receives a type and a callback function. The `on()` method registers a continuous listener that triggers every time something has changed, the `once()` method registers a listener that would be called only once. In this scenario, we are interested to keep the latest list of users though.
+
+Since the users are objects rather than lists when they are retrieved from the Firebase database, you have to restructure them as lists (arrays), which makes it easier to display them later:
+
+```javascript{9,17,19,20,21,22,25}
+...
+
+class AdminPage extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      loading: false,
+      users: [],
+    };
+  }
+
+  componentDidMount() {
+    this.setState({ loading: true });
+
+    this.props.firebase.users().on('value', snapshot => {
+      const usersObject = snapshot.val();
+
+      const usersList = Object.keys(usersObject).map(key => ({
+        ...usersObject[key],
+        uid: key,
+      }));
+
+      this.setState({
+        users: usersList,
+        loading: false,
+      });
+    });
+  }
+
+  ...
+}
+
+export default withFirebase(AdminPage);
+```
+
+Remember to remove the listener to avoid memory leaks from using the same reference with the `off()` method:
+
+```javascript{6,7,8}
+...
+
+class AdminPage extends Component {
+  ...
+
+  componentWillUnmount() {
+    this.props.firebase.users().off();
+  }
+
+  ...
+}
+
+export default withFirebase(AdminPage);
+```
+
+Render your list of users in the AdminPage component or in a child component. In this case, we are using a child component:
+
+```javascript{7,13,15,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37}
+...
+
+class AdminPage extends Component {
+  ...
+
+  render() {
+    const { users, loading } = this.state;
+
+    return (
+      <div>
+        <h1>Admin</h1>
+
+        {loading && <div>Loading ...</div>}
+
+        <UserList users={users} />
+      </div>
+    );
+  }
+}
+
+const UserList = ({ users }) => (
+  <ul>
+    {users.map(user => (
+      <li key={user.uid}>
+        <span>
+          <strong>ID:</strong> {user.uid}
+        </span>
+        <span>
+          <strong>E-Mail:</strong> {user.email}
+        </span>
+        <span>
+          <strong>Username:</strong> {user.username}
+        </span>
+      </li>
+    ))}
+  </ul>
+);
+
+export default withFirebase(AdminPage);
+```
+
+You have gained full control of your users now. It is possible to create and retrieve users from your realtime database. You can decide whether this is a one-time call to the Firebase realtime database, or if you want to continuously listen for updates as well.
+
+### Exercises:
+
+* Read more about [how to read and write data to Firebase's realtime database](https://firebase.google.com/docs/database/web/read-and-write)
+* Confirm your [source code for the last section](http://bit.ly/2VmRegY)
+
+<Divider />
+
+Everything essential is in place for Firebase authentication and Firebase realtime database for user management. I am interested in seeing what you will build on top of it! If you want to continue to follow this tutorial, get the whole book to finish this application with plenty of powerful features.
+
+**What's else will be included in the book?**
+
+* Role-based Authorization: So far, you have only authorized your application on a broad level, by checking for an authenticated user. In the book, you will learn how to assign roles to your users and how to give them additional privileges.
+
+* User Management: In order to get more control over your users, I will show you how to merge authentication user and database user. Then you can always assign new properties to your database user while having access to it on your user after authentication too.
+
+* Users and Messages: Next to the user management, you will introduce a second entity for messages to your application. By using both entities, user and message, we can build a chat application.
+
+* Read and Write Operations: In the application, you created a user and display a list of users with real-time capabilities. The book continuous with the usual delete and update operations to organize your users in the realtime database.
+
+* Offline, Double Opt-In, Social Logins: The book adds more Firebase attributes ike offline capabilities, double opt-in sign ups, and social sign ups/ins via third-parties like Facebook or Google.
+
+* Firebase Deployment: The final step in the book is  to deploy an application with Firebase. The books walks you through the process step-by-step to see your project online.
+
+* Firestore: Firebase's Firestore is the new Firebase Realtime Database. In the book, I may show you a way to migrate to this new tech stack. Then it is up to you whether you want to use Firestore or Firebase's Realtime Database.
+
+* Source Code Projects: This application is only build with React and Firebase. But what about taking it on the next level to enable it for real businesses? That's where I want to show you how to migrate the project to Redux, MobX, or Gatsby.js. You will get access to variations of this application that will have additional tech when choosing the course instead of only the book:
+  * Gatsby + Firebase
+  * React + Redux + Firebase
+  * React + MobX + Firebase
+  * React + Semantic UI + Firebase
+  * React + Cloud Firestore
