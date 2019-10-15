@@ -118,9 +118,7 @@ exports.createPages = ({ actions, graphql }) =>
               slug
               categories
             }
-            code {
-              scope
-            }
+            body
           }
         }
       }

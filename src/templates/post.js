@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { graphql } from 'gatsby';
 import Img from 'gatsby-image';
-import MDXRenderer from 'gatsby-mdx/mdx-renderer';
+import MDXRenderer from 'gatsby-plugin-mdx/mdx-renderer';
 
 import Layout from '../components/Layout';
 import Link from '../components/Link';
@@ -35,7 +35,7 @@ export default function Post({
         />
       )}
 
-      <MDXRenderer>{mdx.code.body}</MDXRenderer>
+      <MDXRenderer>{mdx.body}</MDXRenderer>
 
       <div>
         <CategoryList list={mdx.frontmatter.categories} />
@@ -79,9 +79,7 @@ export const pageQuery = graphql`
         categories
         keywords
       }
-      code {
-        body
-      }
+      body
     }
   }
 `;
