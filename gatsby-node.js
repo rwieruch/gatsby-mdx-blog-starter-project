@@ -91,6 +91,7 @@ const createPaginatedPages = (
       path: index > 0 ? `${pathPrefix}/${index}` : `${pathPrefix}`,
       component: path.resolve(`src/templates/blog.js`),
       context: {
+        foo: (bar) => bar,
         pagination: {
           page,
           nextPagePath: index === 0 ? null : nextPagePath,
