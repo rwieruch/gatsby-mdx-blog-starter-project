@@ -2,10 +2,10 @@ const path = require('path');
 
 const PAGINATION_OFFSET = 2;
 
-const pluckCategories = edges =>
+const pluckCategories = (edges) =>
   Object.keys(
     edges.reduce((acc, value) => {
-      value.node.fields.categories.forEach(category => {
+      value.node.fields.categories.forEach((category) => {
         if (!acc[category]) {
           acc[category] = category;
         }
@@ -15,9 +15,9 @@ const pluckCategories = edges =>
     }, {}),
   );
 
-const groupByCategory = edges =>
+const groupByCategory = (edges) =>
   edges.reduce((acc, value) => {
-    value.node.fields.categories.forEach(category => {
+    value.node.fields.categories.forEach((category) => {
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -31,7 +31,7 @@ const createCategoryPages = (createPage, edges) => {
 
   const posts = groupByCategory(edges);
 
-  Object.keys(posts).forEach(category => {
+  Object.keys(posts).forEach((category) => {
     createPaginatedPages(
       createPage,
       posts[category],
