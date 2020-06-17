@@ -25,7 +25,7 @@ A starter project in [Gatsby.js](https://www.gatsbyjs.org/) with [MDX](https://g
 
 ## Setup via Gatsby CLI
 
-* `gatsby new gatsby-mdx-blog-starter-project git@github.com:rwieruch/gatsby-mdx-blog-starter-project.git`
+* `gatsby new gatsby-mdx-blog-starter-project rwieruch/gatsby-mdx-blog-starter-project`
 * `cd gatsby-mdx-blog-starter-project`
 * `npm install`
 * `gatsby develop`
